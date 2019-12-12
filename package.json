@@ -1,0 +1,23 @@
+{
+  "name": "attendance-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/higtak/attendance-tools.git"
+  },
+  "author": "higtak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/higtak/attendance-tools/issues"
+  },
+  "homepage": "https://github.com/higtak/attendance-tools#readme",
+  "dependencies": {
+    "puppeteer-core": "^2.0.0"
+  }
+}
