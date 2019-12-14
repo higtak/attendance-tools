@@ -18,6 +18,10 @@
   },
   "homepage": "https://github.com/higtak/attendance-tools#readme",
   "dependencies": {
-    "puppeteer-core": "^2.0.0"
+    "clipboardy": "^2.1.0",
+    "date-utils": "^1.2.21",
+    "js-yaml": "^3.13.1",
+    "log4js": "^6.1.0",
+    "moment": "^2.24.0"
   }
 }
