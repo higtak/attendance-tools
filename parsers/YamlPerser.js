@@ -40,7 +40,7 @@ class YamlPerser {
             return null;
         }
 
-        return new AttendanceRecord(result.date, result.start, result.end, result.break);
+        return AttendanceRecord.parse(result.date, result.start, result.end, result.break);
     }
 }
 

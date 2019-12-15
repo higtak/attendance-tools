@@ -1,2 +1,5 @@
 *
 !sample.yml
+!sample.xlsx
+!output
+!.gitignore

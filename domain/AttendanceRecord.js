@@ -1,34 +1,46 @@
 const moment = require('moment');
+const DateTimeUtils = require('../utils/DateTimeUtils');
 
 class AttendanceRecord {
     constructor(date, start, end, breakTime) {
-        this.setDate(date);
-        this.setStart(start);
-        this.setEnd(end);
-        this.setBreakTime(breakTime);
+        this.date = date;
+        this.start = start;
+        this.end = end;
+        this.breakTime = breakTime;
     }
 
-    setDate(date) {
-        this.date = moment(date, ['YYYY-MM-DD', 'YYYY/MM/DD'])
+    toString() {
+        return {
+            date: this.date.format('YYYY-MM-DD'),
+            start: DateTimeUtils.minutesToTime(this.start),
+            end: DateTimeUtils.minutesToTime(this.end),
+            breakTime: DateTimeUtils.minutesToTime(this.breakTime),
+            workingTime: DateTimeUtils.minutesToTime(this.end - this.start - this.breakTime)
+        };
     }
 
-    setStart(start) {
-        this.start = this._parseMinutes(start);
+    static parse(date, start, end, breakTime) {
+        const d = this._parseDate(date);
+        const s = this._parseStart(start);
+        const e = this._parseEnd(end);
+        const br = this._parseBreakTime(breakTime);
+        return new this(d, s, e, br);
     }
 
-    setEnd(end) {
-        this.end = this._parseMinutes(end);
+    static _parseDate(date) {
+        return moment(date, ['YYYY-MM-DD', 'YYYY/MM/DD'])
     }
 
-    setBreakTime(breakTime) {
-        this.breakTime = this._parseMinutes(breakTime);
+    static _parseStart(start) {
+        return DateTimeUtils.timeToMinutes(start);
     }
 
-    _parseMinutes(str) {
-        const splitted = str.split(':');
-        let minutes = parseInt(splitted[0], 10) * 60;
-        minutes += parseInt(splitted[1], 10);
-        return minutes;
+    static _parseEnd(end) {
+        return DateTimeUtils.timeToMinutes(end);
+    }
+
+    static _parseBreakTime(breakTime) {
+        return DateTimeUtils.timeToMinutes(breakTime);
     }
 }
 

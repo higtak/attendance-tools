@@ -2,7 +2,14 @@ const log4js = require('log4js');
 log4js.configure('config/log4js.config.json');
 const logger = log4js.getLogger();
 
+const DateTimeUtils = require('../utils/DateTimeUtils');
+const AttendanceCalculator = require('./AttendanceCalculator');
+
 class GenerateScriptService {
+    constructor() {
+        this.calculator = new AttendanceCalculator();
+    }
+
     generate(data) {
         let script = '';
         for (const result of data.results) {
@@ -12,31 +19,34 @@ class GenerateScriptService {
         return script;
     }
 
-    _generateDay(record) {
-        const dayIndex = record.date.date() - 1;
+    _generateDay(inputResult) {
+        const result = this.calculator.calculate(inputResult);
+        if (logger.isDebugEnabled()) {
+            logger.debug(result.toString());
+        }
+
+        const dayIndex = inputResult.date.date() - 1;
         const orderIndex = 0;
-        const start = this._minutesToTime(record.start);
-        const end = this._minutesToTime(record.end - record.breakTime + 105); // TODO: 標準休憩時間を細かく設定
+        const start = DateTimeUtils.minutesToTime(result.start);
+        const end = DateTimeUtils.minutesToTime(result.end);
 
         let script = '';
         // 開始時間のスクリプト
-        script += `const start${dayIndex}${orderIndex} = document.getElementById('dailyList[${dayIndex}].orderList[${orderIndex}].resultEnterTime');\n`;
-        script += `start${dayIndex}${orderIndex}.parentElement.style.color = 'transparent';\n`;
-        script += `start${dayIndex}${orderIndex}.setAttribute('type', 'text'); start${dayIndex}${orderIndex}.style.backgroundColor = 'yellow';\n`;
-        script += `start${dayIndex}${orderIndex}.value = '${start}';\n`;
-
-        script += `const end${dayIndex}${orderIndex} = document.getElementById('dailyList[${dayIndex}].orderList[${orderIndex}].resultLeavingTime');\n`;
-        script += `end${dayIndex}${orderIndex}.parentElement.style.color = 'transparent';\n`;
-        script += `end${dayIndex}${orderIndex}.setAttribute('type', 'text'); end${dayIndex}${orderIndex}.style.backgroundColor = 'yellow';\n`;
-        script += `end${dayIndex}${orderIndex}.value = '${end}';\n`;
+        const startId = `dailyList[${dayIndex}].orderList[${orderIndex}].resultEnterTime`;
+        const startVar = `start${dayIndex}${orderIndex}`;
+        script += `const ${startVar} = document.getElementById('${startId}');\n`;
+        script += `${startVar}.parentElement.style.color = 'transparent';\n`;
+        script += `${startVar}.setAttribute('type', 'text'); ${startVar}.style.backgroundColor = 'yellow';\n`;
+        script += `${startVar}.value = '${start}';\n`;
+        // 終了時間のスクリプト
+        const endId = `dailyList[${dayIndex}].orderList[${orderIndex}].resultLeavingTime`;
+        const endVar = `end${dayIndex}${orderIndex}`;
+        script += `const ${endVar} = document.getElementById('${endId}');\n`;
+        script += `${endVar}.parentElement.style.color = 'transparent';\n`;
+        script += `${endVar}.setAttribute('type', 'text'); ${endVar}.style.backgroundColor = 'yellow';\n`;
+        script += `${endVar}.value = '${end}';\n`;
 
         return script;
-    }
-
-    _minutesToTime(value) {
-        const hour = Math.floor(value / 60);
-        const minutes = value % 60;
-        return ('00' + hour).slice(-2) + ('00' + minutes).slice(-2);
     }
 }
 

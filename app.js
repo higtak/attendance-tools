@@ -1,6 +1,8 @@
 const fs = require('fs');
-const YamlParser = require('./parsers/YamlPerser');
+const moment = require('moment');
 const clipboardy = require('clipboardy');
+const YamlParser = require('./parsers/YamlPerser');
+const XlsxParser = require('./parsers/XlsxParser');
 
 const log4js = require('log4js');
 log4js.configure('config/log4js.config.json');
@@ -12,22 +14,37 @@ class Main {
     async main() {
         logger.debug('START');
 
-        if (process.argv.length === 2) {
-            logger.error('引数ファイルパスを指定してください。');
-            process.exitCode = 1;
-            return;
+        const argv = require('yargs')
+            .usage('Usage: $0 -f filePath [-o filePath]')
+            .describe('f', '入力ファイルパス')
+            .alias('f', 'file')
+            .demandOption('f')
+            .describe('o', '出力ファイルパス')
+            .alias('o', 'output-path')
+            .default('o', './data/output/attendance_input.js')
+            .describe('xlsx-sheet', '')
+            .describe('xlsx-skip-rows', '')
+            .default('xlsx-skip-rows', 1)
+            .argv;
+
+        const filePath = argv.f;
+        const outputPath = argv.o;
+
+        let parser;
+        if (filePath.endsWith('.xlsx')) {
+            parser = new XlsxParser(argv);
+        } else {
+            parser = new YamlParser();
         }
 
-        const filePath = process.argv[2];
-
-        const data = new YamlParser().parse(filePath);
+        const data = parser.parse(filePath);
         const script = new GenerateScriptService().generate(data);
         logger.info('勤怠入力用のスクリプトを生成しました。');
         logger.info('\n' + script);
 
-        const outputPath = './data/output_script.js';
         try {
-            fs.writeFileSync(outputPath, script);
+            const dateTime = moment().format('YYYY/MM/DD HH:mm:ss');
+            fs.writeFileSync(outputPath, `/* generated at ${dateTime} */\n` + script);
             logger.info('スクリプトファイルへ出力しました。', outputPath);
         } catch (err) {
             logger.warn('スクリプトファイルへの出力に失敗しました。', outputPath);
