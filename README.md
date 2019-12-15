@@ -11,6 +11,10 @@
 
 ```shell script
 docker-compose up -d
+docker-compose exec node bash
+
+npm install
+exit
 ```
 
 ## 使い方
